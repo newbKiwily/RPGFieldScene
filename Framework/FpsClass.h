@@ -1,0 +1,46 @@
+////////////////////////////////////////////////////////////////////////////////
+// Filename: fpsclass.h
+////////////////////////////////////////////////////////////////////////////////
+#ifndef _FPSCLASS_H_
+#define _FPSCLASS_H_
+
+
+/////////////
+// LINKING //
+/////////////
+#pragma comment(lib, "winmm.lib")
+
+
+//////////////
+// INCLUDES //
+//////////////
+#include <windows.h>
+#include <mmsystem.h>
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Class name: FpsClass
+////////////////////////////////////////////////////////////////////////////////
+class FpsClass
+{
+public:
+	static FpsClass& GetInstance()
+	{
+		static FpsClass instance;
+		return instance;
+	}
+
+	void Initialize();
+	void Frame();
+	int GetFps();
+
+private:
+	FpsClass();
+	FpsClass(const FpsClass&);
+	~FpsClass();
+	FpsClass& operator=(const FpsClass&) = delete;
+	int m_fps, m_count;
+	unsigned long m_startTime;
+};
+
+#endif
