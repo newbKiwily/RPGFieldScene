@@ -55,6 +55,8 @@ private:
 	GraphicsClass* m_Graphics;
 	SoundClass* m_Sound;
 	float camYaw, camPitch;
+	bool m_colorBlendWasDown = false;
+	bool m_normalMapWasDown = false;
 };
 
 

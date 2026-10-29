@@ -45,6 +45,7 @@ private:
 		XMFLOAT3 lightDirection;
 		float specularPower;
 		XMFLOAT4 specularColor;
+		XMFLOAT4 mappingControls;
 	};
 
 	struct PointLightColorBufferType
@@ -65,6 +66,12 @@ public:
 
 	bool Initialize(ID3D11Device*, HWND);
 	void Shutdown();
+
+	void BindSkinLighting(ID3D11DeviceContext* deviceContext);
+	void SetMappingEnabled(bool colorBlendEnabled, bool normalMapEnabled, bool snowAlphaEnabled = false)
+	{
+		m_mappingControls = XMFLOAT4(colorBlendEnabled ? 1.0f : 0.0f, normalMapEnabled ? 1.0f : 0.0f, snowAlphaEnabled ? 1.0f : 0.0f, 0.0f);
+	}
 	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView**, 
 		XMFLOAT3, XMFLOAT4, XMFLOAT4, XMFLOAT3, XMFLOAT4, float,XMFLOAT4[], XMFLOAT4[]);
 
@@ -78,6 +85,7 @@ private:
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:
+	XMFLOAT4 m_mappingControls = XMFLOAT4(1.0f, 1.0f, 0.0f, 0.0f);
 	ID3D11VertexShader* m_vertexShader;
 	ID3D11PixelShader* m_pixelShader;
 	ID3D11InputLayout* m_layout;

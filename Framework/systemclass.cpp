@@ -182,7 +182,16 @@ void SystemClass::Run()
 
 bool SystemClass::Frame()
 {
-	m_Input->Frame();
+	const bool inputReady = m_Input->Frame();
+	const bool mappingInputActive = inputReady && GetForegroundWindow() == m_hwnd;
+	const bool colorBlendDown = mappingInputActive && m_Input->IsColorBlendPressed();
+	const bool normalMapDown = mappingInputActive && m_Input->IsNormalMapPressed();
+	if (colorBlendDown && !m_colorBlendWasDown)
+		m_Graphics->groundColorBlendEnabled = !m_Graphics->groundColorBlendEnabled;
+	if (normalMapDown && !m_normalMapWasDown)
+		m_Graphics->groundNormalMapEnabled = !m_Graphics->groundNormalMapEnabled;
+	m_colorBlendWasDown = colorBlendDown;
+	m_normalMapWasDown = normalMapDown;
 
 	int deltaX, deltaY;
 	m_Input->GetMouseDelta(deltaX, deltaY);

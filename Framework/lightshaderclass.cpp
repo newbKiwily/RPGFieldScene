@@ -480,6 +480,7 @@ bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext,
 	dataPtr2->lightDirection = lightDirection;
 	dataPtr2->specularColor = specularColor;
 	dataPtr2->specularPower = specularPower;
+	dataPtr2->mappingControls = m_mappingControls;
 
 	// Unlock the constant buffer.
 	deviceContext->Unmap(m_lightBuffer, 0);
@@ -592,4 +593,13 @@ void LightShaderClass::RenderShader(ID3D11DeviceContext* deviceContext, int inde
 	deviceContext->DrawIndexed(indexCount, 0, 0);
 
 	return;
+}
+
+void LightShaderClass::BindSkinLighting(ID3D11DeviceContext* deviceContext)
+{
+    ID3D11Buffer* skinLightBuffers[] = {
+        m_lightBuffer, m_pointLightColorBuffer, m_pointLightPositionBuffer, m_cameraBuffer
+    };
+    deviceContext->PSSetConstantBuffers(0, 4, skinLightBuffers);
+    deviceContext->PSSetSamplers(0, 1, &m_sampleState);
 }

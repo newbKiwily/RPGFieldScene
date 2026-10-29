@@ -21,6 +21,7 @@ cbuffer LightBuffer
     float3 lightDirection;
     float specularPower;
     float4 specularColor;
+    float4 mappingControls;
 };
 
 Texture2D shaderTextures[3];
@@ -107,24 +108,23 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
     );
 
     float4 diffuseMap = shaderTextures[2].Sample(SampleType, input.tex);
-    
-    bool isWhite = (diffuseMap.r > 0.95f &&
-                diffuseMap.g > 0.95f &&
-                diffuseMap.b > 0.95f);
-
-    float blendFactor = 3.0f;
-
-// diffuseMap이 흰색이면 블렌딩하지 않음
-    float4 baseColor;
-    if (isWhite)
+    float blendFactor = 0.96f;
+    float snowCoverage = 0.0f;
+    float4 baseColor = textureColor;
+    if (mappingControls.z > 0.5f)
     {
-        baseColor = textureColor;
+        // This guard prevents generated snow near a road edge from spilling onto the road itself.
+        float grassCoverage = smoothstep(0.0f, 0.08f, textureColor.g - textureColor.r);
+        snowCoverage = saturate(diffuseMap.a * grassCoverage * mappingControls.x);
+        baseColor = lerp(textureColor, float4(diffuseMap.rgb, textureColor.a), snowCoverage * blendFactor);
     }
     else
     {
-        baseColor = lerp(textureColor, diffuseMap, blendFactor);
+        bool isWhite = all(diffuseMap.rgb > 0.95f);
+        if (!isWhite)
+            baseColor = lerp(textureColor, diffuseMap, 0.35f * mappingControls.x);
     }
-    
+    bumpNormal = normalize(lerp(normalize(input.normal), bumpNormal, mappingControls.y));
 
     float4 dcolor = ambientColor;
     float4 specular = float4(0, 0, 0, 0);
@@ -147,52 +147,52 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
     // Light 1
     {
         float distance = length(input.lightPos1);
-        float intens = (3.0f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos1)));
+        float intens = (3.6f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos1)));
         pcolor1 = pointDiffuseColor[0] * intens;
     }
 
     // Light 2
     {
         float distance = length(input.lightPos2);
-        float intens = (3.0f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos2)));
+        float intens = (3.6f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos2)));
         pcolor2 = pointDiffuseColor[1] * intens;
     }
 
     // Light 3
     {
         float distance = length(input.lightPos3);
-        float intens = (3.0f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos3)));
+        float intens = (3.6f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos3)));
         pcolor3 = pointDiffuseColor[2] * intens;
     }
 
 
     {
         float distance = length(input.lightPos4);
-        float intens = (3.0f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos4))); 
+        float intens = (3.6f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos4)));
         pcolor4 = pointDiffuseColor[3] * intens;
     }
     
     {
         float distance = length(input.lightPos5);
-        float intens = (40.0f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos5)));
+        float intens = (44.0f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos5)));
         pcolor5 = pointDiffuseColor[4] * intens;
     }
     
     {
         float distance = length(input.lightPos6);
-        float intens = (7.0f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos6)));
+        float intens = (8.4f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos6)));
         pcolor6 = pointDiffuseColor[5] * intens;
     }
     
     {
         float distance = length(input.lightPos7);
-        float intens = (7.0f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos7)));
+        float intens = (8.4f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos7)));
         pcolor7 = pointDiffuseColor[6] * intens;
     }
     
     {
         float distance = length(input.lightPos8);
-        float intens = (7.0f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos8)));
+        float intens = (8.4f / distance) * saturate(dot(bumpNormal, normalize(input.lightPos8)));
         pcolor8 = pointDiffuseColor[7] * intens;
     }
     float4 pspec = 0;
@@ -205,6 +205,13 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
     pspec += pow(saturate(dot(normalize(reflect(-normalize(input.lightPos6), bumpNormal)), input.viewDirection)), specularPower);
     pspec += pow(saturate(dot(normalize(reflect(-normalize(input.lightPos7), bumpNormal)), input.viewDirection)), specularPower);
     pspec += pow(saturate(dot(normalize(reflect(-normalize(input.lightPos8), bumpNormal)), input.viewDirection)), specularPower);
-    float4 finalLight = saturate(dcolor + pcolor1 + pcolor2 + pcolor3 + pcolor4 + pcolor5 + pcolor6 + pcolor7 +pcolor8+ specular + pspec);
-    return saturate(finalLight * baseColor);
+    float4 finalLight = saturate(dcolor + pcolor1 + pcolor2 + pcolor3 + pcolor4 + pcolor5 + pcolor6 + pcolor7 +pcolor8+ specular + pspec * 0.12f);
+    if (snowCoverage > 0.0f)
+    {
+        float snowLightValue = dot(finalLight.rgb, float3(0.2126f, 0.7152f, 0.0722f));
+        float3 snowLight = lerp(float3(snowLightValue, snowLightValue, snowLightValue), finalLight.rgb, 0.40f);
+        snowLight = lerp(snowLight, float3(1.0f, 1.0f, 1.0f), 0.30f);
+        finalLight.rgb = lerp(finalLight.rgb, snowLight, snowCoverage);
+    }
+    return saturate(lerp(baseColor, finalLight * baseColor, 1.0f));
 }

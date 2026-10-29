@@ -200,6 +200,7 @@
     <ClInclude Include="FontShaderClass.h" />
     <ClInclude Include="FpsClass.h" />
     <ClInclude Include="FpsText.h" />
+    <ClInclude Include="GroundMappingText.h" />
     <ClInclude Include="graphicsclass.h" />
     <ClInclude Include="inputclass.h" />
     <ClInclude Include="lightclass.h" />

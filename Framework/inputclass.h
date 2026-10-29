@@ -45,6 +45,8 @@ public:
 	bool IsLeftPressed();
 	bool IsTitleOnPressed();
 	bool IsTitleOffPressed();
+	bool IsColorBlendPressed() const { return (m_keyboardState[DIK_B] & 0x80) != 0; }
+	bool IsNormalMapPressed() const { return (m_keyboardState[DIK_N] & 0x80) != 0; }
 	void GetMouseLocation(int&, int&);
 	void GetMouseDelta(int& deltaX, int& deltaY);
 	bool IsLeftMouseButtonDown();

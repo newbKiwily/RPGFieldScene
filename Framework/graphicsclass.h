@@ -58,6 +58,8 @@ public:
 	void CreateRayFromScreen(float sx, float sy, XMVECTOR& rayOrigin, XMVECTOR& rayDir);
 	bool RayIntersectAABB(XMVECTOR rayOrigin, XMVECTOR rayDir,const XMFLOAT3& minV, const XMFLOAT3& maxV,const XMMATRIX& world);
 	bool isLeftMouseClick;
+	bool groundColorBlendEnabled = true;
+	bool groundNormalMapEnabled = false;
 private:
 
 	

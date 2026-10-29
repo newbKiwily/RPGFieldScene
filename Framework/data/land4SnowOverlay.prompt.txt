@@ -1,0 +1,9 @@
+Generated with the built-in image_gen tool.
+Source reference: land4 (1).png, resized to 2048x2048 without changing the layout.
+Output: land4SnowOverlay.png (1254x1254, RGBA).
+DDS: land4SnowOverlay.dds (RGBA8, 11 mip levels, full-resolution RGBA verified losslessly).
+Coverage: overlay alpha multiplied by the base grass color guard; roads remain exposed.
+B toggles snow blending, N toggles the existing ground normal mapping.
+
+Prompt:
+Edit the supplied square terrain albedo into a HIGH-DETAIL SNOW OVERLAY with real transparency, UV-aligned to the reference. Preserve the full square orientation and EXACT tan path layout in the lower half: left entry at y~.53 steps right and downward to vertical x~.32 extending to bottom, crossbar y~.78 across to x~.68, right path steps up and exits right at y~.58. Every tan path pixel should become fully transparent, not opaque tan or a checkerboard. The grass areas should become neutral-white photorealistic powder snow; do not retain the green summer grass as opaque paint. Thick finely granular wind-rippled white snow in grass interiors; on the grass immediately beside each road, snow transitions via irregular wispy transparent feathering, sparse frost grains, tiny clumps, and occasional fine dried grass tips; alpha fades from zero on the path to full snow roughly 2-4% image width into the grass. This is a flat orthographic top-down GAME ALBEDO TEXTURE, not a landscape illustration. Subtle self-shading in pale cool gray, no strong directional or baked shadows. No perspective, horizon, objects, trees, buildings, text, border or new roads. Preserve exact original road locations and shapes; create snow only on the grass. Native square output 2048x2048 preferred. Genuine alpha channel with clear roads and soft alpha transitions is essential.

@@ -8,6 +8,7 @@
 #include "PolyCountText.h"
 #include "FpsText.h"
 #include "CPUText.h"
+#include "GroundMappingText.h"
 #include "Title.h"
 #include "RMShader.h"
 #include "TimeManager.h"
@@ -126,7 +127,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		MessageBox(hwnd, L"Could not initialize the model1 object.", L"Error", MB_OK);
 		return false;
 	}
-	result = landModel2->Initialize(D3DClass::GetInstance().GetDevice(), L"./data/land4.obj", L"./data/land4.dds", L"./data/StreetLightBump.dds", L"./data/land4Diffuse.dds");
+	result = landModel2->Initialize(D3DClass::GetInstance().GetDevice(), L"./data/land4.obj", L"./data/land4.dds", L"./data/StreetLightBump.dds", L"./data/land4SnowOverlay.dds");
 	//result = landModel2->Initialize(D3DClass::GetInstance().GetDevice(), L"./data/land4.obj", L"./data/land4.dds", L"./data/StreetLightBump.dds", L"./data/dummyDiffuseMap.dds");
 	polyCount += landModel2->getPolygonCount();
 	if (!result)
@@ -444,11 +445,11 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize the light object.
-	m_Light->SetAmbientColor(0.2f, 0.2f, 0.2f, 1.0f);
-	m_Light->SetDiffuseColor(0.8f, 0.8f, 0.8f, 1.0f);
+	m_Light->SetAmbientColor(0.16f, 0.16f, 0.16f, 1.0f);
+	m_Light->SetDiffuseColor(0.88f, 0.88f, 0.88f, 1.0f);
 	m_Light->SetDirection(0.0f, 5.0f, 1.0f);
-	m_Light->SetSpecularColor(0.0f, 0.0f, 0.0f, 1.0f);
-	m_Light->SetSpecularPower(1000000.0f);
+	m_Light->SetSpecularColor(0.12f, 0.10f, 0.065f, 1.0f);
+	m_Light->SetSpecularPower(64.0f);
 
 	m_pointLight1 = new PointLightClass;
 	m_pointLight2 = new PointLightClass;
@@ -490,6 +491,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	textClasses.push_back(new PolyCountText(30, 60,this));
 	textClasses.push_back(new FpsText(30, 80));
 	textClasses.push_back(new CPUText(30, 100));
+	textClasses.push_back(new GroundMappingText(30, 120, &groundColorBlendEnabled, &groundNormalMapEnabled));
 	XMMATRIX baseViewMatrix;
 	m_Camera->Render();
 	m_Camera->GetViewMatrix(baseViewMatrix);
@@ -704,6 +706,7 @@ bool GraphicsClass::Render(float rotation)
 	plightPosition[7] = m_pointLight8->GetPosition();
 
 	
+	m_LightShader->SetMappingEnabled(groundColorBlendEnabled, groundNormalMapEnabled);
 	landModel->Render(context);
 	result = m_LightShader->Render(
 		context,
@@ -722,6 +725,7 @@ bool GraphicsClass::Render(float rotation)
 	);
 	if (!result)
 		return false;
+	m_LightShader->SetMappingEnabled(groundColorBlendEnabled, groundNormalMapEnabled, true);
 	landModel2->Render(context);
 	result = m_LightShader->Render(
 		context,
@@ -740,6 +744,7 @@ bool GraphicsClass::Render(float rotation)
 	);
 	if (!result)
 		return false;
+	m_LightShader->SetMappingEnabled(true, true);
 	result = m_oldLightShader->Render(
 		context,
 		m_skinModel->GetIndexCount(),
@@ -756,6 +761,7 @@ bool GraphicsClass::Render(float rotation)
 		return false;
 
 	RM_SHADER.SetShaderParameters(D3DClass::GetInstance().GetDeviceContext(), viewMatrix, projectionMatrix);
+	m_LightShader->BindSkinLighting(D3DClass::GetInstance().GetDeviceContext());
 	m_skinModel->Render(D3DClass::GetInstance().GetDeviceContext());
 	XMFLOAT3 mov(m_skinModel->GetCenter());
 	if (m_skinModel->GetAnimationList().size() != 0)
